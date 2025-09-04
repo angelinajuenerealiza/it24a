@@ -20,8 +20,10 @@
     }
 
     function getTaskText(){
-        var input = document.getElementById('taskInput');
-         console.log(input.value);
+        const input = document.getElementById('taskInput');
+        const text = input.value.trim();
+         console.log("getTaskText() called " + input.value);
+         return(text,input);
     }
     </script>    
 </body>
