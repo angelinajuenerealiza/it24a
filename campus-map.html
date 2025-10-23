@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campus Maps</title>
+    <title>Campus Map</title>
 
     <!-- Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -25,23 +25,24 @@
     
 </head>
 <body>
-    <h1>Campus Maps</h1>
+    <h1>Campus Map</h1>
      <div id="map"></div>
 </body>
 <script>
 
 function initMap(mapDataUrl){
-
     const map = L.map('map').setView([8.3603,124.8684],17);
+
     //OpenStreetMapLayer
-    const openStreetMap = l.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    const openStreetMap = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
         maxZoom:19,
         attribution:'&copy; OpenStreetMap contributors'
     });
+
     //Satellite
     const satellite = L.tileLayer(
-        'https://server.argisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{x}/{y}',
-        {attribution: 'Tiles (c) Esri - Source: Esri, Maxar, Earthstar, Geographics, GIS User Community'}
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {attribution:'Tiles (c) Esri - Source: Esri, Maxar, Earthstar Geographics, GIS User Community'}
     );
 
     openStreetMap.addTo(map);
@@ -52,12 +53,12 @@ function initMap(mapDataUrl){
     fetch(mapDataUrl)
         .then(response => response.json())
         .then(data => {
-            data.forEach(pin => {
+            data.forEach( pin => {
                 const type = pin.locationType || "Other";
 
                 //Create Marker Group
                 if(!markerGroups[type]){
-                    markerGroups[type] = L.LayerGroup();
+                    markerGroups[type] = L.layerGroup();
                 }
 
                 //Marker and Popup
@@ -68,28 +69,30 @@ function initMap(mapDataUrl){
 
                 markerGroups[type].addLayer(marker);
             });
-            //add all groups to map initially
+            //Add all groups to map initially
             Object.values(markerGroups).forEach(group => group.addTo(map));
-            //Layer Control
+
+            //Layer control
             const baseMaps={
                 "OpenStreetMap":openStreetMap,
                 "Satellite": satellite
             }
 
             const overlayMaps={};
-            //add marker groups to the map accordibg to layer filter
+
+            //Add marker groups to the map according to layer filter
             Object.keys(markerGroups).forEach(type=>{
                 overlayMaps[type] = markerGroups[type];
-
             });
-
+            
+            //Add all elements into the map
             L.control.layers(baseMaps,overlayMaps,{collapsed:false}).addTo(map);
         })
         .catch(err => console.error('Error loading JSON', err));
-
 }
-document.addEventListener("DOMContentLoaded", ()=>{
-    initMap('campus-maps.json');
+document.addEventListener("DOMContentLoaded",()=>{
+    initMap('campus-map.json');
 ;});
+
 </script>
 </html>
