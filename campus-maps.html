@@ -46,9 +46,50 @@ function initMap(mapDataUrl){
 
     openStreetMap.addTo(map);
     console.log("Base map tile layer loaded" + Date());
+
+    const markerGroups ={};
+
+    fetch(mapDataUrl)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(pin => {
+                const type = pin.locationType || "Other";
+
+                //Create Marker Group
+                if(!markerGroups[type]){
+                    markerGroups[type] = L.LayerGroup();
+                }
+
+                //Marker and Popup
+                const marker = L.marker([pin.lat,pin.lng]).addTo(map);
+                const img = `<img src='${pin.img}' class="popup-image">`;
+                marker.bindPopup(`${img}<br><b> ${pin.title} </b><br> ${pin.description}<br> ${pin.locationType}`);
+                console.log(`${pin.name} Loaded ` +Date());
+
+                markerGroups[type].addLayer(marker);
+            });
+            //add all groups to map initially
+            Object.values(markerGroups).forEach(group => group.addTo(map));
+            //Layer Control
+            const baseMaps={
+                "OpenStreetMap":openStreetMap,
+                "Satellite": satellite
+            }
+
+            const overlayMaps={};
+            //add marker groups to the map accordibg to layer filter
+            Object.keys(markerGroups).forEach(type=>{
+                overlayMaps[type] = markerGroups[type];
+
+            });
+
+            L.control.layers(baseMaps,overlayMaps,{collapsed:false}).addTo(map);
+        })
+        .catch(err => console.error('Error loading JSON', err));
+
 }
 document.addEventListener("DOMContentLoaded", ()=>{
-    initMap('');
-});
+    initMap('campus-maps.json');
+;});
 </script>
 </html>
